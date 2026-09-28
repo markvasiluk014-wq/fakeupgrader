@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS2 Upgrader & Clicker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #0b0e14;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            width: 100%;
+            background: #121824;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #1f293d;
+        }
+
+        .logo {
+            font-family: 'Teko', sans-serif;
+            font-size: 32px;
+            color: #ffaa00;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .balance-box {
+            background: #1a2233;
+            padding: 8px 20px;
+            border-radius: 8px;
+            border: 1px solid #2a3650;
+            font-size: 18px;
+            font-weight: 600;
+            color: #00ffcc;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 90%;
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            padding-bottom: 50px;
+        }
+
+        .card {
+            background: #141b26;
+            border: 1px solid #222d42;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        h2 {
+            font-size: 22px;
+            margin-bottom: 15px;
+            color: #e2e8f0;
+        }
+
+        /* Тапалка */
+        .tap-btn {
+            background: linear-gradient(135deg, #ffaa00, #ff5500);
+            border: none;
+            color: white;
+            font-size: 28px;
+            font-weight: 700;
+            padding: 20px 40px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(255, 120, 0, 0.4);
+            transition: 0.1s;
+            text-transform: uppercase;
+            font-family: 'Teko', sans-serif;
+            letter-spacing: 1px;
+        }
+
+        .tap-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Апгрейдер */
+        .upgrader-area {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .skin-box {
+            background: #1a2233;
+            border: 2px solid #2a3650;
+            width: 160px;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .skin-box img {
+            width: 100px;
+            height: 70px;
+            object-fit: contain;
+            margin-bottom: 10px;
+        }
+
+        .upgrade-btn {
+            background: #00ffcc;
+            border: none;
+            color: #0b0e14;
+            font-weight: 700;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: 0.2s;
+        }
+
+        .upgrade-btn:hover {
+            background: #00cca3;
+            box-shadow: 0 0 15px rgba(0,255,204,0.4);
+        }
+
+        #result-msg {
+            margin-top: 10px;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        /* Магазин */
+        .shop-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .shop-item {
+            background: #1a2233;
+            border: 1px solid #2a3650;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .shop-item img {
+            width: 120px;
+            height: 80px;
+            object-fit: contain;
+            margin-bottom: 10px;
+        }
+
+        .buy-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .buy-btn:hover {
+            background: #1d4ed8;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">CS2 UPGRADER & CLICKER</div>
+        <div class="balance-box">Монеты: <span id="coins">100</span> 🪙</div>
+    </header>
+
+    <div class="container">
+        <!-- Блок кликера -->
+        <div class="card">
+            <h2>Фарм монет (Тапалка)</h2>
+            <p style="color: #8b9bb4; margin-bottom: 15px;">Тапай по кнопке, чтобы зарабатывать монеты для апгрейдов!</p>
+            <button class="tap-btn" onclick="tapCoins()">ТАПАТЬ (+1 🪙)</button>
+        </div>
+
+        <!-- Блок апгрейдера -->
+        <div class="card">
+            <h2>Апгрейд скинов (Шанс 50%)</h2>
+            <div class="upgrader-area">
+                <div class="skin-box">
+                    <p style="font-size: 12px; color: #8b9bb4;">Ваш скин</p>
+                    <p style="font-weight: bold; color: #bce3c5;">AK-47 | Safari Mesh</p>
+                    <p style="font-size: 12px; color: #ffaa00;">Цена: 50 🪙</p>
+                </div>
+                <div style="font-size: 24px; font-weight: bold; color: #ffaa00;">VS</div>
+                <div class="skin-box" style="border-color: #ffaa00;">
+                    <p style="font-size: 12px; color: #8b9bb4;">Желаемый скин</p>
+                    <p style="font-weight: bold; color: #ffd700;">AWP | Asiimov</p>
+                    <p style="font-size: 12px; color: #ffaa00;">Цена: 200 🪙</p>
+                </div>
+            </div>
+            <button class="upgrade-btn" onclick="tryUpgrade()">КРУТИТЬ АПГРЕЙД (Стоит 50 🪙)</button>
+            <p id="result-msg"></p>
+        </div>
+
+        <!-- Блок магазина -->
+        <div class="card">
+            <h2>Магазин скинов</h2>
+            <div class="shop-grid">
+                <div class="shop-item">
+                    <p style="font-weight: bold;">USP-S | Flashback</p>
+                    <p style="color: #ffaa00; font-size: 14px; margin: 5px 0;">150 🪙</p>
+                    <button class="buy-btn" onclick="buySkin(150, 'USP-S | Flashback')">Купить</button>
+                </div>
+                <div class="shop-item">
+                    <p style="font-weight: bold;">M4A4 | Neo-Noir</p>
+                    <p style="color: #ffaa00; font-size: 14px; margin: 5px 0;">400 🪙</p>
+                    <button class="buy-btn" onclick="buySkin(400, 'M4A4 | Neo-Noir')">Купить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let coins = 100;
+
+        function updateCoins() {
+            document.getElementById('coins').textContent = coins;
+        }
+
+        function tapCoins() {
+            coins += 1;
+            updateCoins();
+        }
+
+        function tryUpgrade() {
+            const cost = 50;
+            const msg = document.getElementById('result-msg');
+
+            if (coins < cost) {
+                msg.style.color = '#ff4d4d';
+                msg.textContent = 'Недостаточно монет для апгрейда!';
+                return;
+            }
+
+            coins -= cost;
+            updateCoins();
+
+            // Шанс 50%
+            const success = Math.random() >= 0.5;
+
+            if (success) {
+                msg.style.color = '#00ffcc';
+                msg.textContent = 'УСПЕХ! Вы выиграли AWP | Asiimov! 🎉';
+                coins += 200; // Награда
+                updateCoins();
+            } else {
+                msg.style.color = '#ff4d4d';
+                msg.textContent = 'Неудача! Скин сгорел 😢';
+            }
+        }
+
+        function buySkin(price, name) {
+            if (coins >= price) {
+                coins -= price;
+                updateCoins();
+                alert('Поздравляем с покупкой: ' + name + '!');
+            } else {
+                alert('Не хватает монеток!');
+            }
+        }
+    </script>
+</body>
+</html>
