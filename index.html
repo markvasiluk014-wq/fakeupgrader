@@ -321,7 +321,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 <!-- ══ FIREBASE SDK ══ -->
 <script type="module">
 // ╔══════════════════════════════════════════════════════════════╗
-// ║  ВСТАВЬ СЮДА СВОЙ FIREBASE CONFIG                           ║
+// ║  ВСТАВЬ СЮДА СВОЙ FIREBASE CONFIG                            ║
 // ║  Firebase Console → Project Settings → Your apps → Config  ║
 // ╚══════════════════════════════════════════════════════════════╝
 const FIREBASE_CONFIG = {
@@ -334,14 +334,14 @@ const FIREBASE_CONFIG = {
   appId:             "1:81967264804:web:fe8e8f02ad36e3841754b1"
 };
 
-import { initializeApp }                          from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { initializeApp }                            from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword,
          signInWithEmailAndPassword, signOut,
-         onAuthStateChanged }                     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+         onAuthStateChanged }                       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc,
-         updateDoc, serverTimestamp }             from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+         updateDoc, serverTimestamp }               from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getDatabase, ref, set, onValue,
-         onDisconnect, increment }               from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+         onDisconnect, increment }                from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 // ── detect unconfigured ──
 const IS_CONFIGURED = !FIREBASE_CONFIG.apiKey.includes("PASTE");
@@ -382,7 +382,7 @@ const markets = [
 // ══════════════════════════════════════════════
 //  HELPERS
 // ══════════════════════════════════════════════
-const fmt   = n => '$' + Math.abs(n).toFixed(2);
+const fmt  = n => '$' + Math.abs(n).toFixed(2);
 const fmtM  = n => n >= 1000 ? '$'+(n/1000).toFixed(1)+'B' : '$'+n.toFixed(1)+'M';
 const catLbl= c => ({politics:'Политика',crypto:'Крипто',sport:'Спорт',economy:'Экономика',tech:'Технологии'}[c]||c);
 const msLeft= b => Math.max(0, b.resolveAt - Date.now());
@@ -398,7 +398,7 @@ function setEl(id,val){const e=document.getElementById(id);if(e)e.textContent=va
 //  AUTH FLOW
 // ══════════════════════════════════════════════
 window.switchTab = (tab) => {
-  document.getElementById('tab-login').style.display   = tab==='login'    ? '' : 'none';
+  document.getElementById('tab-login').style.display    = tab==='login'    ? '' : 'none';
   document.getElementById('tab-register').style.display = tab==='register' ? '' : 'none';
   document.querySelectorAll('.auth-tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&tab==='login')||(i===1&&tab==='register')));
   document.getElementById('auth-err').textContent = '';
@@ -534,335 +534,4 @@ async function saveUserData() {
 setInterval(() => saveUserData(), 15000);
 
 // ══════════════════════════════════════════════
-//  AUTH STATE LISTENER
-// ══════════════════════════════════════════════
-if (IS_CONFIGURED) {
-  onAuthStateChanged(auth, async user => {
-    if (user) {
-      currentUser = user;
-      await loadUserData(user.uid);
-
-      // get username
-      const snap = await getDoc(doc(db,'users',user.uid));
-      currentUsername = snap.data()?.username ?? user.email.split('@')[0];
-
-      setupPresence(user.uid);
-      enterApp();
-    } else {
-      currentUser = null;
-      document.getElementById('auth-screen').classList.remove('hidden');
-      document.getElementById('app').style.display = 'none';
-      watchOnlineCount();
-    }
-  });
-} else {
-  // demo mode without firebase
-  watchOnlineCount();
-  document.getElementById('auth-screen').classList.remove('hidden');
-  document.getElementById('app').style.display = 'none';
-
-  // allow demo login
-  window.doLogin = window.doRegister = () => {
-    currentUsername = document.getElementById('reg-name')?.value || document.getElementById('login-email')?.value || 'Demo';
-    enterApp();
-  };
-}
-
-function enterApp() {
-  document.getElementById('auth-screen').classList.add('hidden');
-  document.getElementById('app').style.display = 'grid';
-  const initials = currentUsername.substring(0,2).toUpperCase();
-  setEl('nav-username', currentUsername);
-  setEl('nav-avatar', initials);
-  setEl('cab-avatar', initials);
-  setEl('cab-name', currentUsername);
-  setEl('cab-tag', '@'+currentUsername.toLowerCase().replace(/\s/g,'_'));
-  document.getElementById('cab-avatar').textContent = initials;
-  updateAllStats();
-  render();
-  renderCabinet();
-}
-
-// ══════════════════════════════════════════════
-//  STATS
-// ══════════════════════════════════════════════
-function updateAllStats() {
-  const pairs = [
-    ['nav-balance',fmt(balance)],['s-balance',fmt(balance)],['cab-balance',fmt(balance)],
-    ['s-bets',activeBets.length],['s-won',fmt(totalWon)],
-    ['active-count',activeBets.length],['hist-count',history.length],
-    ['cab-won',fmt(totalWon)],['cab-lost',fmt(totalLost)],
-    ['cab-cnt',history.length+activeBets.length],
-  ];
-  pairs.forEach(([id,val])=>setEl(id,val));
-  const wins=history.filter(h=>h.result==='win').length;
-  setEl('cab-wr', history.length>0 ? Math.round(wins/history.length*100)+'%' : '—');
-  const diff = balance - 1000;
-  const ch = document.getElementById('cab-change');
-  if(ch){
-    if(diff>0.01){ch.textContent='+'+fmt(diff)+' от старта';ch.className='balance-change pos';}
-    else if(diff<-0.01){ch.textContent='-'+fmt(-diff)+' от старта';ch.className='balance-change neg';}
-    else{ch.textContent='Начальный капитал';ch.className='balance-change';}
-  }
-}
-
-// ══════════════════════════════════════════════
-//  TOAST
-// ══════════════════════════════════════════════
-function showToast(type,msg,sub){
-  const c={yes:'var(--yes)',no:'var(--no)',gold:'var(--gold)',blue:'var(--accent)'};
-  document.getElementById('t-dot').style.background=c[type]||c.blue;
-  document.getElementById('t-main').textContent=msg;
-  document.getElementById('t-sub').textContent=sub||'';
-  const t=document.getElementById('toast');
-  t.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>t.classList.remove('show'),3500);
-}
-
-// ══════════════════════════════════════════════
-//  BETTING
-// ══════════════════════════════════════════════
-window.placeBet = (marketId, side) => {
-  const input=document.getElementById('input-'+marketId);
-  const amount=parseFloat(input.value);
-  const m=markets[marketId];
-  if(!amount||amount<1){showToast('no','Введите сумму','Минимум $1');return;}
-  if(amount>balance){showToast('no','Недостаточно средств','Баланс: '+fmt(balance));return;}
-  const price=side==='yes'?m.yes/100:(100-m.yes)/100;
-  const potentialWin=+(amount/price).toFixed(2);
-  balance-=amount; totalLost+=amount;
-  const betId=++betIdCounter;
-  const resolveAt=Date.now()+m.daysLeft*MS_PER_DAY;
-  activeBets.push({betId,marketId,side,amount,price,potentialWin,resolveAt});
-  const delta=(amount/800)*(Math.random()*1.5+0.3);
-  if(side==='yes')m.yes=Math.min(96,m.yes+delta);else m.yes=Math.max(4,m.yes-delta);
-  m.vol+=amount/1e6;
-  scheduleResolve(betId,m.daysLeft*MS_PER_DAY);
-  input.value='';
-  updateCard(marketId); updateAllStats(); renderCabinet(); saveUserData();
-  showToast('yes',`Ставка «${side==='yes'?'Да':'Нет'}» принята!`,
-    `${fmt(amount)} → потенциально ${fmt(potentialWin)} · итог: ${fmtCD(m.daysLeft*MS_PER_DAY)}`);
-};
-
-function scheduleResolve(betId, delayMs){
-  if(resolveTimers[betId])clearTimeout(resolveTimers[betId]);
-  resolveTimers[betId]=setTimeout(()=>resolveBet(betId),Math.max(200,delayMs));
-}
-
-function resolveBet(betId){
-  const idx=activeBets.findIndex(b=>b.betId===betId);
-  if(idx===-1)return;
-  const bet=activeBets[idx];
-  const m=markets[bet.marketId];
-  delete resolveTimers[betId];
-  activeBets.splice(idx,1);
-  const outcome=Math.random()<(m.yes/100)?'yes':'no';
-  const won=bet.side===outcome;
-  const pnl=won?+(bet.potentialWin-bet.amount).toFixed(2):+(-bet.amount).toFixed(2);
-  if(won){balance+=bet.potentialWin;totalWon+=bet.potentialWin;totalLost-=bet.amount;}
-  history.unshift({betId,marketId:bet.marketId,side:bet.side,amount:bet.amount,
-    potentialWin:bet.potentialWin,result:won?'win':'lose',pnl,
-    marketTitle:m.title,icon:m.icon,date:new Date().toLocaleTimeString('ru')});
-  updateAllStats(); renderCabinet(); updateCard(bet.marketId); saveUserData();
-  showToast(won?'yes':'no',
-    won?`🎉 Победа! +${fmt(bet.potentialWin)}`:`❌ Проигрыш ${fmt(bet.amount)}`,
-    `Итог: «${outcome==='yes'?'Да':'Нет'}» · ${m.title.substring(0,44)}...`);
-}
-
-// ══════════════════════════════════════════════
-//  SKIP PER-BET
-// ══════════════════════════════════════════════
-window.openSkip = betId => {
-  skipTargetBetId=betId;
-  const bet=activeBets.find(b=>b.betId===betId);
-  if(!bet)return;
-  const m=markets[bet.marketId];
-  document.getElementById('skip-market-label').innerHTML=
-    `<span style="font-size:16px">${m.icon}</span><span style="flex:1">${m.title}</span>
-     <span style="color:var(--gold);font-family:var(--mono);font-size:11px;flex-shrink:0">${fmtCD(msLeft(bet))}</span>`;
-  document.getElementById('skip-modal').classList.add('open');
-};
-window.closeSkip=()=>{document.getElementById('skip-modal').classList.remove('open');skipTargetBetId=null;};
-window.doSkip=(days,cost)=>{
-  if(skipTargetBetId===null)return;
-  if(balance<cost){closeSkip();showToast('no','Недостаточно средств',`Нужно $${cost}, у вас ${fmt(balance)}`);return;}
-  const bet=activeBets.find(b=>b.betId===skipTargetBetId);
-  if(!bet){closeSkip();return;}
-  balance-=cost;
-  bet.resolveAt=Math.max(Date.now()+300,bet.resolveAt-days*MS_PER_DAY);
-  scheduleResolve(bet.betId,bet.resolveAt-Date.now());
-  closeSkip(); updateAllStats(); renderCabinet(); saveUserData();
-  showToast('gold',days>=999?'⚡ Мгновенный результат! (-$'+cost+')':'⏩ +'+days+' дн. пропущено (-$'+cost+')',
-    fmtCD(Math.max(0,bet.resolveAt-Date.now())));
-};
-
-// ══════════════════════════════════════════════
-//  CARDS
-// ══════════════════════════════════════════════
-function updateCard(id){
-  const m=markets[id],el=document.getElementById('card-'+id);
-  if(!el)return;
-  el.querySelector('.bar-y').style.width=Math.round(m.yes)+'%';
-  el.querySelector('.bar-n').style.width=(100-Math.round(m.yes))+'%';
-  el.querySelector('.p-yes').textContent='Да '+Math.round(m.yes)+'%';
-  el.querySelector('.p-no').textContent='Нет '+(100-Math.round(m.yes))+'%';
-  el.querySelector('.card-vol').textContent=fmtM(m.vol);
-  const myBets=activeBets.filter(b=>b.marketId===id);
-  const pt=el.querySelector('.my-pos-tag');
-  if(myBets.length>0){
-    pt.className='my-pos-tag show';
-    const yb=myBets.filter(b=>b.side==='yes').length,nb=myBets.filter(b=>b.side==='no').length;
-    pt.innerHTML=`<span style="color:var(--muted)">Ваши:</span><span style="display:flex;gap:4px">
-      ${yb?`<span class="pos-badge pos-y">Да ×${yb}</span>`:''}
-      ${nb?`<span class="pos-badge pos-n">Нет ×${nb}</span>`:''}
-    </span>`;
-  }else{pt.className='my-pos-tag';}
-}
-
-function cardHTML(m){
-  const yp=Math.round(m.yes),np=100-yp;
-  return `<div class="card" id="card-${m.id}">
-    <div class="card-top">
-      <div class="card-icon">${m.icon}</div>
-      <div style="flex:1;min-width:0">
-        <div class="card-title">${m.title}</div>
-        <div class="card-meta">
-          <span class="meta-tag">${catLbl(m.cat)}</span>
-          <span class="meta-tag" style="color:var(--gold)">📅 ${m.resolveDate}</span>
-          <span class="meta-tag" id="cd-${m.id}" style="color:var(--muted)">~${m.daysLeft}д</span>
-        </div>
-      </div>
-    </div>
-    <div class="bar-wrap"><div class="bar-y" style="width:${yp}%"></div><div class="bar-n" style="width:${np}%"></div></div>
-    <div class="card-foot">
-      <div class="probs"><span class="p-yes">Да ${yp}%</span><span class="p-no">Нет ${np}%</span></div>
-      <span class="card-vol">${fmtM(m.vol)}</span>
-    </div>
-    <div class="prices">Цена Да: <b style="color:var(--yes);font-family:var(--mono)">$${(m.yes/100).toFixed(2)}</b>
-      · Нет: <b style="color:var(--no);font-family:var(--mono)">$${((100-m.yes)/100).toFixed(2)}</b></div>
-    <div class="bet-row">
-      <input class="bet-input" id="input-${m.id}" type="number" min="1" placeholder="Сумма ($)">
-      <button class="btn-y" onclick="placeBet(${m.id},'yes')">Да</button>
-      <button class="btn-n" onclick="placeBet(${m.id},'no')">Нет</button>
-    </div>
-    <div class="my-pos-tag"></div>
-  </div>`;
-}
-
-window.render=function(){
-  const list=curFilter==='all'?markets:markets.filter(m=>m.cat===curFilter);
-  document.getElementById('grid').innerHTML=list.map(cardHTML).join('');
-};
-window.setFilter=function(el,cat){
-  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
-  el.classList.add('active');curFilter=cat;render();
-};
-
-// ══════════════════════════════════════════════
-//  TICK
-// ══════════════════════════════════════════════
-setInterval(()=>{
-  markets.forEach(m=>{
-    const cdEl=document.getElementById('cd-'+m.id);if(!cdEl)return;
-    const myBets=activeBets.filter(b=>b.marketId===m.id);
-    if(!myBets.length){cdEl.textContent=`~${m.daysLeft}д`;cdEl.style.color='';return;}
-    const earliest=Math.min(...myBets.map(b=>msLeft(b)));
-    cdEl.textContent=fmtCD(earliest);
-    cdEl.style.color=earliest<60000?'var(--no)':'var(--gold)';
-  });
-  activeBets.forEach(b=>{
-    const el=document.getElementById('bcd-'+b.betId);
-    if(el){const ms=msLeft(b);el.textContent=fmtCD(ms);el.style.color=ms<60000?'var(--no)':'var(--gold)';}
-  });
-},1000);
-
-// ══════════════════════════════════════════════
-//  CABINET
-// ══════════════════════════════════════════════
-window.renderCabinet=function(){
-  const ab=document.getElementById('active-bets-list');
-  if(!activeBets.length){
-    ab.innerHTML='<div class="empty-state"><div class="empty-icon">📊</div>Нет активных ставок</div>';
-  }else{
-    ab.innerHTML=activeBets.map(b=>{
-      const m=markets[b.marketId];
-      const curP=b.side==='yes'?m.yes/100:(100-m.yes)/100;
-      const pnl=b.amount*(curP/b.price)-b.amount;
-      const pc=pnl>0.5?'pnl-pos':pnl<-0.5?'pnl-neg':'pnl-neu';
-      const ms=msLeft(b);
-      return `<div class="bet-item">
-        <div class="bet-icon2">${m.icon}</div>
-        <div class="bet-info">
-          <div class="bet-title">${m.title}</div>
-          <div class="bet-detail">
-            <span class="bet-side ${b.side==='yes'?'side-yes':'side-no'}">${b.side==='yes'?'Да':'Нет'}</span>
-            <span id="bcd-${b.betId}" style="color:var(--gold);font-size:11px">${fmtCD(ms)}</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
-            <span style="font-size:11px;color:var(--muted)">Потенциал: <b style="color:var(--yes);font-family:var(--mono)">${fmt(b.potentialWin)}</b></span>
-            <button class="skip-bet-btn" onclick="openSkip(${b.betId})">⏩ Ускорить</button>
-          </div>
-        </div>
-        <div class="bet-nums">
-          <div class="bet-amount">${fmt(b.amount)}</div>
-          <div class="bet-pnl ${pc}">${pnl>=0?'+':'-'}${fmt(Math.abs(pnl))}</div>
-        </div>
-      </div>`;
-    }).join('');
-  }
-  const hl=document.getElementById('history-list');
-  if(!history.length){
-    hl.innerHTML='<div class="empty-state"><div class="empty-icon">📜</div>История пуста</div>';
-  }else{
-    hl.innerHTML=history.map(h=>{
-      const w=h.result==='win';
-      return `<div class="hist-item">
-        <div class="hist-result ${w?'res-win':'res-lose'}">${w?'✓':'✗'}</div>
-        <div class="bet-icon2" style="width:28px;height:28px;font-size:13px">${h.icon}</div>
-        <div class="bet-info">
-          <div class="bet-title">${h.marketTitle}</div>
-          <div class="bet-detail">
-            <span class="bet-side ${h.side==='yes'?'side-yes':'side-no'}">${h.side==='yes'?'Да':'Нет'}</span>
-            <span style="color:var(--dim);font-size:10px">${h.date}</span>
-            <span style="color:var(--muted)">Поставлено: ${fmt(h.amount)} · Потенциал: ${fmt(h.potentialWin)}</span>
-          </div>
-        </div>
-        <div class="bet-nums">
-          <div class="hist-pnl" style="color:${w?'var(--yes)':'var(--no)'}">${w?'+':'-'}${fmt(Math.abs(h.pnl))}</div>
-          <div style="font-size:10px;color:var(--muted);margin-top:2px">${w?'Выигрыш':'Проигрыш'}</div>
-        </div>
-      </div>`;
-    }).join('');
-  }
-};
-
-// ══════════════════════════════════════════════
-//  NAV
-// ══════════════════════════════════════════════
-window.showView=(name,btn)=>{
-  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  document.getElementById('view-'+name).classList.add('active');
-  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-  if(btn)btn.classList.add('active');
-  if(name==='cabinet'){updateAllStats();renderCabinet();}
-};
-
-</script>
-
-<!-- ══ SETUP INSTRUCTIONS ══ -->
-<details style="display:none" id="setup-guide">
-<summary>Как настроить Firebase</summary>
-<ol>
-  <li>Перейди на <a href="https://console.firebase.google.com">console.firebase.google.com</a></li>
-  <li>Создай новый проект</li>
-  <li>В Project Settings → Your apps → Add app → Web — скопируй firebaseConfig</li>
-  <li>В Authentication → Sign-in method → включи Email/Password</li>
-  <li>В Firestore Database → Create database (test mode)</li>
-  <li>В Realtime Database → Create database (test mode)</li>
-  <li>Вставь конфиг в переменную FIREBASE_CONFIG в коде</li>
-</ol>
-</details>
-
-</body>
-</html>
+//  AUTH STATE LIS
