@@ -3,535 +3,266 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PolyMarket</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>Простой Кликер с Авторизацией</title>
 <style>
-:root {
-  --bg:#0d0f14;--bg2:#13161d;--bg3:#1a1e28;--bg4:#222736;
-  --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.13);
-  --text:#f0f0ee;--muted:#8a8fa0;--dim:#5a5f70;
-  --yes:#22d67a;--no:#ff4d5e;--accent:#4f7fff;--accent2:#7c5cff;--gold:#f5c842;
-  --font:'Syne',sans-serif;--mono:'JetBrains Mono',monospace;--r:10px;--r2:16px;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
-::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
-
-/* ── AUTH SCREEN ── */
-#auth-screen{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;align-items:center;justify-content:center}
-#auth-screen.hidden{display:none}
-.auth-box{background:var(--bg2);border:1px solid var(--border2);border-radius:24px;padding:36px;width:100%;max-width:380px}
-.auth-logo{font-size:24px;font-weight:700;letter-spacing:-.5px;margin-bottom:6px}
-.auth-logo em{color:var(--accent);font-style:normal}
-.auth-sub{font-size:13px;color:var(--muted);margin-bottom:28px}
-.auth-tabs{display:flex;gap:0;background:var(--bg3);border-radius:10px;padding:3px;margin-bottom:24px}
-.auth-tab{flex:1;padding:8px;border-radius:8px;font-size:13px;font-family:var(--font);cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all .15s;text-align:center}
-.auth-tab.active{background:var(--bg);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.4)}
-.auth-field{margin-bottom:14px}
-.auth-field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
-.auth-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:14px;font-family:var(--mono);outline:none;transition:border-color .15s}
-.auth-input:focus{border-color:var(--accent)}
-.auth-input::placeholder{color:var(--dim)}
-.auth-btn{width:100%;padding:12px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-size:14px;font-weight:600;font-family:var(--font);cursor:pointer;margin-top:4px;transition:all .15s}
-.auth-btn:hover{background:#3d6ee0}
-.auth-btn:active{transform:scale(.98)}
-.auth-err{font-size:12px;color:var(--no);margin-top:10px;min-height:18px;text-align:center}
-.auth-online{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-top:20px;justify-content:center}
-.online-dot{width:7px;height:7px;border-radius:50%;background:var(--yes);animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.auth-divider{height:1px;background:var(--border);margin:20px 0;position:relative}
-.auth-divider span{position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:var(--bg2);padding:0 10px;font-size:11px;color:var(--dim)}
-
-/* ── FIREBASE CONFIG WARNING ── */
-#config-warning{display:none;background:rgba(245,200,66,.08);border:1px solid rgba(245,200,66,.3);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--gold);margin-bottom:16px;line-height:1.6}
-#config-warning.show{display:block}
-#config-warning code{background:rgba(245,200,66,.15);padding:1px 5px;border-radius:4px;font-family:var(--mono)}
-
-/* ── NAV ── */
-.app{display:grid;grid-template-rows:56px 1fr;min-height:100vh}
-.nav{display:flex;align-items:center;justify-content:space-between;padding:0 24px;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:100}
-.logo{font-size:17px;font-weight:700;letter-spacing:-.5px}
-.logo em{color:var(--accent);font-style:normal}
-.nav-links{display:flex;gap:4px}
-.nav-btn{padding:6px 14px;border-radius:20px;font-size:13px;font-family:var(--font);cursor:pointer;border:1px solid transparent;background:transparent;color:var(--muted);transition:all .15s}
-.nav-btn:hover{color:var(--text);background:var(--bg3)}
-.nav-btn.active{background:var(--bg3);color:var(--text);border-color:var(--border2)}
-.nav-right{display:flex;align-items:center;gap:10px}
-.balance-chip{display:flex;align-items:center;gap:7px;background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:6px 14px;font-size:13px;font-family:var(--mono)}
-.bv{color:var(--yes);font-weight:500}
-.online-chip{display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:12px;color:var(--muted)}
-.online-chip .od{width:6px;height:6px;border-radius:50%;background:var(--yes);flex-shrink:0;animation:pulse 2s infinite}
-.user-chip{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:5px 5px 5px 12px;cursor:pointer;font-size:13px;color:var(--text);transition:border-color .15s}
-.user-chip:hover{border-color:var(--border2)}
-.user-avatar{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
-.logout-btn{padding:5px 10px;border-radius:16px;border:none;background:rgba(255,77,94,.15);color:var(--no);font-size:11px;font-family:var(--font);cursor:pointer;transition:all .15s}
-.logout-btn:hover{background:rgba(255,77,94,.28)}
-
-/* ── MAIN ── */
-.main{padding:24px;max-width:1200px;margin:0 auto;width:100%}
-.view{display:none}.view.active{display:block}
-.page-header{margin-bottom:20px}
-.section-title{font-size:22px;font-weight:700;letter-spacing:-.5px;margin-bottom:4px}
-.section-sub{font-size:13px;color:var(--muted)}
-.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px}
-.stat{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px}
-.stat-val{font-size:20px;font-weight:700;font-family:var(--mono);color:var(--text)}
-.stat-val.green{color:var(--yes)}.stat-val.blue{color:var(--accent)}.stat-val.gold{color:var(--gold)}
-.stat-lbl{font-size:11px;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:.5px}
-.filters{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
-.chip{padding:5px 13px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:var(--font);transition:all .15s}
-.chip:hover{border-color:var(--border2);color:var(--text)}
-.chip.active{background:var(--accent);border-color:var(--accent);color:#fff}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
-.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:18px;transition:border-color .15s}
-.card:hover{border-color:var(--border2)}
-.card-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px}
-.card-icon{width:40px;height:40px;border-radius:10px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-.card-title{font-size:14px;font-weight:600;line-height:1.4;color:var(--text)}
-.card-meta{font-size:11px;color:var(--muted);margin-top:4px;display:flex;gap:6px;flex-wrap:wrap}
-.meta-tag{background:var(--bg3);border-radius:4px;padding:2px 6px}
-.bar-wrap{height:5px;background:var(--bg4);border-radius:3px;margin-bottom:10px;overflow:hidden;display:flex}
-.bar-y{background:var(--yes);height:100%;border-radius:3px 0 0 3px;transition:width .5s cubic-bezier(.4,0,.2,1)}
-.bar-n{background:var(--no);height:100%;border-radius:0 3px 3px 0;transition:width .5s cubic-bezier(.4,0,.2,1)}
-.card-foot{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.probs{display:flex;gap:10px}
-.p-yes{font-size:13px;font-weight:600;color:var(--yes);font-family:var(--mono)}
-.p-no{font-size:13px;font-weight:600;color:var(--no);font-family:var(--mono)}
-.card-vol{font-size:11px;color:var(--dim)}
-.prices{font-size:11px;color:var(--muted);margin-bottom:10px;display:flex;gap:8px}
-.bet-row{display:flex;gap:6px;align-items:center}
-.bet-input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:7px 10px;color:var(--text);font-size:13px;font-family:var(--mono);outline:none;transition:border-color .15s;min-width:0}
-.bet-input:focus{border-color:var(--accent)}
-.bet-input::placeholder{color:var(--dim)}
-.btn-y{padding:7px 14px;border-radius:8px;border:none;background:rgba(34,214,122,.15);color:var(--yes);font-size:13px;font-weight:600;font-family:var(--font);cursor:pointer;transition:all .15s}
-.btn-y:hover{background:rgba(34,214,122,.28)}
-.btn-n{padding:7px 14px;border-radius:8px;border:none;background:rgba(255,77,94,.15);color:var(--no);font-size:13px;font-weight:600;font-family:var(--font);cursor:pointer;transition:all .15s}
-.btn-n:hover{background:rgba(255,77,94,.28)}
-.my-pos-tag{font-size:11px;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);display:none;align-items:center;justify-content:space-between}
-.my-pos-tag.show{display:flex}
-.pos-badge{padding:2px 7px;border-radius:4px;font-size:11px;font-family:var(--mono)}
-.pos-y{background:rgba(34,214,122,.12);color:var(--yes)}
-.pos-n{background:rgba(255,77,94,.12);color:var(--no)}
-
-/* ── TOAST ── */
-#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--bg3);border:1px solid var(--border2);border-radius:24px;padding:10px 20px;font-size:13px;display:flex;align-items:center;gap:10px;z-index:9999;transition:transform .3s,opacity .3s;opacity:0;max-width:92vw}
-#toast.show{transform:translateX(-50%) translateY(0);opacity:1}
-.t-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.t-main{color:var(--text);white-space:nowrap}.t-sub{color:var(--muted);font-size:12px;white-space:nowrap}
-
-/* ── CABINET ── */
-.cab-grid{display:grid;grid-template-columns:310px 1fr;gap:16px}
-.cab-sidebar{display:flex;flex-direction:column;gap:12px}
-.profile-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:20px}
-.profile-top{display:flex;align-items:center;gap:14px;margin-bottom:18px}
-.profile-avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700}
-.profile-name{font-size:16px;font-weight:700}.profile-tag{font-size:12px;color:var(--muted);margin-top:2px;font-family:var(--mono)}
-.balance-block{background:var(--bg3);border-radius:var(--r);padding:14px;margin-bottom:12px}
-.balance-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
-.balance-big{font-size:28px;font-weight:700;font-family:var(--mono);color:var(--yes)}
-.balance-change{font-size:12px;margin-top:4px;font-family:var(--mono);color:var(--muted)}
-.balance-change.pos{color:var(--yes)}.balance-change.neg{color:var(--no)}
-.mini-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.mini-stat{background:var(--bg3);border-radius:8px;padding:10px 12px}
-.mini-stat-val{font-size:16px;font-weight:700;font-family:var(--mono)}.mini-stat-lbl{font-size:11px;color:var(--muted);margin-top:2px}
-.cab-main{display:flex;flex-direction:column;gap:12px}
-.cab-section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:20px}
-.cab-section-title{font-size:14px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
-.count{font-size:12px;color:var(--muted);font-weight:400;font-family:var(--mono);background:var(--bg3);border-radius:20px;padding:2px 8px}
-.empty-state{text-align:center;padding:36px 20px;color:var(--muted);font-size:14px}
-.empty-icon{font-size:30px;margin-bottom:10px}
-.bet-item{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
-.bet-item:last-child{border-bottom:none;padding-bottom:0}.bet-item:first-child{padding-top:0}
-.bet-icon2{width:34px;height:34px;background:var(--bg3);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
-.bet-info{flex:1;min-width:0}
-.bet-title{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px}
-.bet-detail{font-size:11px;color:var(--muted);display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:3px}
-.bet-side{padding:1px 6px;border-radius:4px;font-size:11px;font-weight:600}
-.side-yes{background:rgba(34,214,122,.15);color:var(--yes)}.side-no{background:rgba(255,77,94,.15);color:var(--no)}
-.bet-nums{text-align:right;flex-shrink:0}
-.bet-amount{font-size:13px;font-weight:600;font-family:var(--mono)}
-.bet-pnl{font-size:11px;font-family:var(--mono);margin-top:3px}
-.pnl-pos{color:var(--yes)}.pnl-neg{color:var(--no)}.pnl-neu{color:var(--muted)}
-.skip-bet-btn{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:6px;border:1px solid #f5c84244;background:#f5c84211;color:var(--gold);font-size:11px;font-family:var(--font);cursor:pointer;transition:all .15s;white-space:nowrap;margin-top:2px}
-.skip-bet-btn:hover{background:#f5c84230;border-color:var(--gold)}
-.hist-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
-.hist-item:last-child{border-bottom:none;padding-bottom:0}.hist-item:first-child{padding-top:0}
-.hist-result{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
-.res-win{background:rgba(34,214,122,.15);color:var(--yes)}.res-lose{background:rgba(255,77,94,.15);color:var(--no)}
-.hist-pnl{font-size:13px;font-weight:700;font-family:var(--mono);text-align:right}
-
-/* ── SKIP MODAL ── */
-.modal-overlay{display:none;position:fixed;inset:0;z-index:300;align-items:center;justify-content:center;background:rgba(0,0,0,.75);backdrop-filter:blur(6px)}
-.modal-overlay.open{display:flex}
-.modal-box{background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:28px;max-width:380px;width:92%}
-.modal-title{font-size:17px;font-weight:700;margin-bottom:5px}
-.modal-sub{font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.5}
-.modal-market-label{font-size:12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:18px;color:var(--text);display:flex;align-items:center;gap:8px;line-height:1.4}
-.skip-options{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
-.skip-opt{display:flex;align-items:center;justify-content:space-between;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:13px 15px;cursor:pointer;transition:all .15s}
-.skip-opt:hover{border-color:var(--gold);background:rgba(245,200,66,.07)}
-.skip-opt:active{transform:scale(.98)}
-.skip-opt-days{font-size:15px;font-weight:700;color:var(--gold)}
-.skip-opt-hint{font-size:11px;color:var(--muted);margin-top:2px}
-.skip-opt-price{font-size:15px;font-weight:700;font-family:var(--mono);color:var(--yes)}
-.modal-close{width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:13px;font-family:var(--font);cursor:pointer;transition:all .15s}
-.modal-close:hover{background:var(--bg3);color:var(--text)}
+  :root {
+    --bg: #0f1117;
+    --card: #181b24;
+    --accent: #6366f1;
+    --accent-hover: #4f46e5;
+    --text: #f3f4f6;
+    --muted: #9ca3af;
+    --border: #2d3748;
+    --success: #10b981;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+  body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+  
+  .container { width: 100%; max-width: 400px; padding: 20px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+  
+  h2 { font-size: 24px; font-weight: 700; margin-bottom: 6px; text-align: center; }
+  .subtitle { font-size: 14px; color: var(--muted); text-align: center; margin-bottom: 24px; }
+  
+  .form-group { margin-bottom: 16px; }
+  label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  input { width: 100%; background: #0b0d12; border: 1px solid var(--border); border-radius: 8px; padding: 12px; color: var(--text); font-size: 14px; outline: none; transition: border-color 0.2s; }
+  input:focus { border-color: var(--accent); }
+  
+  .btn { width: 100%; background: var(--accent); color: white; border: none; border-radius: 8px; padding: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s, transform 0.1s; margin-top: 8px; }
+  .btn:hover { background: var(--accent-hover); }
+  .btn:active { transform: scale(0.98); }
+  .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--muted); margin-top: 8px; }
+  .btn-secondary:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+  
+  .error { color: #ef4444; font-size: 13px; text-align: center; margin-top: 12px; min-height: 18px; }
+  
+  /* Игровой интерфейс */
+  .game-screen { display: none; width: 100%; max-width: 480px; padding: 20px; }
+  .game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: var(--card); border: 1px solid var(--border); padding: 14px 18px; border-radius: 12px; }
+  .user-info { font-weight: 600; font-size: 15px; }
+  .score-board { font-size: 28px; font-weight: 800; text-align: center; margin: 30px 0; color: var(--success); }
+  .clicker-btn { width: 160px; height: 160px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #a855f7); border: none; color: white; font-size: 22px; font-weight: bold; cursor: pointer; display: block; margin: 0 auto 30px; box-shadow: 0 10px 25px rgba(99,102,241,0.4); transition: transform 0.1s; }
+  .clicker-btn:active { transform: scale(0.92); }
+  
+  .upgrades { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+  .upgrade-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .upgrade-item:last-child { border-bottom: none; }
+  .upgrade-title { font-size: 14px; font-weight: 500; }
+  .upgrade-sub { font-size: 12px; color: var(--muted); }
+  .buy-btn { background: rgba(99,102,241,0.2); border: 1px solid var(--accent); color: var(--text); padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
+  .buy-btn:hover { background: var(--accent); }
 </style>
 </head>
 <body>
 
-<!-- ══ AUTH SCREEN ══ -->
-<div id="auth-screen">
-  <div class="auth-box">
-    <div class="auth-logo"><em>Poly</em>Market</div>
-    <div class="auth-sub">Рынок предсказаний · Стартовый баланс $1,000</div>
-
-    <div id="config-warning">
-      ⚠️ Firebase не настроен. Вставьте ваш конфиг в переменную <code>FIREBASE_CONFIG</code> в начале скрипта. Инструкция внизу страницы.
-    </div>
-
-    <div class="auth-tabs">
-      <div class="auth-tab active" onclick="switchTab('login')">Войти</div>
-      <div class="auth-tab" onclick="switchTab('register')">Регистрация</div>
-    </div>
-
-    <div id="tab-login">
-      <div class="auth-field"><label>Email</label><input class="auth-input" id="login-email" type="email" placeholder="you@example.com"></div>
-      <div class="auth-field"><label>Пароль</label><input class="auth-input" id="login-pass" type="password" placeholder="••••••••"></div>
-      <button class="auth-btn" onclick="doLogin()">Войти</button>
-    </div>
-
-    <div id="tab-register" style="display:none">
-      <div class="auth-field"><label>Имя пользователя</label><input class="auth-input" id="reg-name" type="text" placeholder="CoolTrader" maxlength="20"></div>
-      <div class="auth-field"><label>Email</label><input class="auth-input" id="reg-email" type="email" placeholder="you@example.com"></div>
-      <div class="auth-field"><label>Пароль</label><input class="auth-input" id="reg-pass" type="password" placeholder="Минимум 6 символов"></div>
-      <button class="auth-btn" onclick="doRegister()">Создать аккаунт · $1,000 бесплатно</button>
-    </div>
-
-    <div class="auth-err" id="auth-err"></div>
-
-    <div class="auth-divider"><span>ОНЛАЙН</span></div>
-    <div class="auth-online">
-      <div class="online-dot"></div>
-      <span id="auth-online-count">...</span> игроков сейчас онлайн
+  <!-- ЭКРАН АВТОРИЗАЦИИ / РЕГИСТРАЦИИ -->
+  <div class="container" id="auth-container">
+    <div class="card">
+      <h2 id="form-title">Вход</h2>
+      <div class="subtitle" id="form-subtitle">Введите свои данные для игры</div>
+      
+      <div class="form-group" id="name-group" style="display: none;">
+        <label>Имя пользователя</label>
+        <input type="text" id="username" placeholder="Твой никнейм">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="email" placeholder="example@mail.com">
+      </div>
+      <div class="form-group">
+        <label>Пароль</label>
+        <input type="password" id="password" placeholder="••••••••">
+      </div>
+      
+      <button class="btn" id="main-action-btn" onclick="handleAuth()">Войти</button>
+      <button class="btn btn-secondary" id="switch-mode-btn" onclick="switchMode()">Нет аккаунта? Зарегистрироваться</button>
+      
+      <div class="error" id="error-msg"></div>
     </div>
   </div>
-</div>
 
-<!-- ══ APP ══ -->
-<div class="app" id="app" style="display:none">
-
-<nav class="nav">
-  <div class="logo"><em>Poly</em>Market</div>
-  <div class="nav-links">
-    <button class="nav-btn active" onclick="showView('markets',this)">Рынки</button>
-    <button class="nav-btn" onclick="showView('cabinet',this)">Кабинет</button>
-  </div>
-  <div class="nav-right">
-    <div class="online-chip"><div class="od"></div><span id="online-count">0</span> онлайн</div>
-    <div class="balance-chip">💰 <span class="bv" id="nav-balance">$1,000.00</span></div>
-    <div class="user-chip" id="user-chip">
-      <span id="nav-username">—</span>
-      <div class="user-avatar" id="nav-avatar">?</div>
+  <!-- ИГРОВОЙ ЭКРАН -->
+  <div class="game-screen" id="game-container">
+    <div class="game-header">
+      <div>Игрок: <span class="user-info" id="display-user"></span></div>
+      <button class="btn-secondary" style="margin:0; padding: 6px 12px; width:auto;" onclick="logout()">Выйти</button>
     </div>
-    <button class="logout-btn" onclick="doLogout()">Выйти</button>
-  </div>
-</nav>
-
-<div class="main">
-
-<div id="toast"><div class="t-dot" id="t-dot"></div><div><div class="t-main" id="t-main"></div><div class="t-sub" id="t-sub"></div></div></div>
-
-<!-- SKIP MODAL -->
-<div class="modal-overlay" id="skip-modal">
-  <div class="modal-box">
-    <div class="modal-title">⏩ Ускорить ставку</div>
-    <div class="modal-sub">Пропустить игровые дни только для этой ставки.</div>
-    <div class="modal-market-label" id="skip-market-label">—</div>
-    <div class="skip-options">
-      <div class="skip-opt" onclick="doSkip(2,5)"><div><div class="skip-opt-days">+2 дня</div><div class="skip-opt-hint">Минус 60 сек ожидания</div></div><div class="skip-opt-price">$5</div></div>
-      <div class="skip-opt" onclick="doSkip(5,10)"><div><div class="skip-opt-days">+5 дней</div><div class="skip-opt-hint">Минус 2.5 мин ожидания</div></div><div class="skip-opt-price">$10</div></div>
-      <div class="skip-opt" onclick="doSkip(14,25)"><div><div class="skip-opt-days">+14 дней</div><div class="skip-opt-hint">Минус 7 мин ожидания</div></div><div class="skip-opt-price">$25</div></div>
-      <div class="skip-opt" onclick="doSkip(9999,50)" style="border-color:#4f7fff55"><div><div class="skip-opt-days" style="color:var(--accent)">⚡ Мгновенно</div><div class="skip-opt-hint">Результат прямо сейчас</div></div><div class="skip-opt-price">$50</div></div>
-    </div>
-    <button class="modal-close" onclick="closeSkip()">Отмена</button>
-  </div>
-</div>
-
-<!-- MARKETS -->
-<div class="view active" id="view-markets">
-  <div class="page-header">
-    <div class="section-title">Рынок предсказаний</div>
-    <div class="section-sub">Ставьте на исходы событий 2025 · 1 игровой день = 30 секунд</div>
-  </div>
-  <div class="stats-row">
-    <div class="stat"><div class="stat-val green" id="s-balance">$1,000.00</div><div class="stat-lbl">Баланс</div></div>
-    <div class="stat"><div class="stat-val blue" id="s-bets">0</div><div class="stat-lbl">Активных ставок</div></div>
-    <div class="stat"><div class="stat-val gold" id="s-won">$0.00</div><div class="stat-lbl">Выиграно</div></div>
-    <div class="stat"><div class="stat-val" id="s-vol">$2.4B</div><div class="stat-lbl">Объём рынка</div></div>
-  </div>
-  <div class="filters">
-    <div class="chip active" onclick="setFilter(this,'all')">Все</div>
-    <div class="chip" onclick="setFilter(this,'politics')">Политика</div>
-    <div class="chip" onclick="setFilter(this,'crypto')">Крипто</div>
-    <div class="chip" onclick="setFilter(this,'sport')">Спорт</div>
-    <div class="chip" onclick="setFilter(this,'economy')">Экономика</div>
-    <div class="chip" onclick="setFilter(this,'tech')">Технологии</div>
-  </div>
-  <div class="grid" id="grid"></div>
-</div>
-
-<!-- CABINET -->
-<div class="view" id="view-cabinet">
-  <div class="cab-grid">
-    <div class="cab-sidebar">
-      <div class="profile-card">
-        <div class="profile-top">
-          <div class="profile-avatar" id="cab-avatar">?</div>
-          <div><div class="profile-name" id="cab-name">—</div><div class="profile-tag" id="cab-tag">@—</div></div>
+    
+    <div class="card">
+      <div class="score-board"><span id="score">0</span> 🪙</div>
+      <button class="clicker-btn" onclick="clickCoin()">Клик!</button>
+      
+      <div class="upgrades">
+        <div style="font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 8px; text-transform: uppercase;">Улучшения</div>
+        
+        <div class="upgrade-item">
+          <div>
+            <div class="upgrade-title">Крепкий палец (+1 за клик)</div>
+            <div class="upgrade-sub">Цена: <span id="p1-cost">15</span> монет</div>
+          </div>
+          <button class="buy-btn" onclick="buyUpgrade(1)">Купить</button>
         </div>
-        <div class="balance-block">
-          <div class="balance-label">Текущий баланс</div>
-          <div class="balance-big" id="cab-balance">$1,000.00</div>
-          <div class="balance-change" id="cab-change">Начальный капитал</div>
-        </div>
-        <div class="mini-stats">
-          <div class="mini-stat"><div class="mini-stat-val" style="color:var(--yes)" id="cab-won">$0</div><div class="mini-stat-lbl">Выиграно</div></div>
-          <div class="mini-stat"><div class="mini-stat-val" style="color:var(--no)" id="cab-lost">$0</div><div class="mini-stat-lbl">Проиграно</div></div>
-          <div class="mini-stat"><div class="mini-stat-val" style="color:var(--accent)" id="cab-cnt">0</div><div class="mini-stat-lbl">Ставок</div></div>
-          <div class="mini-stat"><div class="mini-stat-val" style="color:var(--gold)" id="cab-wr">—</div><div class="mini-stat-lbl">% побед</div></div>
+        
+        <div class="upgrade-item">
+          <div>
+            <div class="upgrade-title">Авто-кликер (+1 монета/сек)</div>
+            <div class="upgrade-sub">Цена: <span id="p2-cost">50</span> монет</div>
+          </div>
+          <button class="buy-btn" onclick="buyUpgrade(2)">Купить</button>
         </div>
       </div>
     </div>
-    <div class="cab-main">
-      <div class="cab-section">
-        <div class="cab-section-title">Активные ставки <span class="count" id="active-count">0</span></div>
-        <div id="active-bets-list"><div class="empty-state"><div class="empty-icon">📊</div>Нет активных ставок</div></div>
-      </div>
-      <div class="cab-section">
-        <div class="cab-section-title">История <span class="count" id="hist-count">0</span></div>
-        <div id="history-list"><div class="empty-state"><div class="empty-icon">📜</div>История пуста</div></div>
-      </div>
-    </div>
   </div>
-</div>
 
-</div></div><!-- /main /app -->
+<script>
+  let isRegistering = false;
+  let currentUser = null;
+  
+  // Игровые переменные
+  let score = 0;
+  let clickPower = 1;
+  let autoPower = 0;
+  let cost1 = 15;
+  let cost2 = 50;
 
-<!-- ══ FIREBASE SDK ══ -->
-<script type="module">
-// ╔══════════════════════════════════════════════════════════════╗
-// ║  ВСТАВЬ СЮДА СВОЙ FIREBASE CONFIG                            ║
-// ║  Firebase Console → Project Settings → Your apps → Config  ║
-// ╚══════════════════════════════════════════════════════════════╝
-const FIREBASE_CONFIG = {
-  apiKey:            "AIzaSyDboivRYj3eu7abGFFo5Lm4MkqRgD0WEVA",
-  authDomain:        "planning-with-ai-6c81a.firebaseapp.com",
-  databaseURL:       "https://planning-with-ai-6c81a-default-rtdb.firebaseio.com",
-  projectId:         "planning-with-ai-6c81a",
-  storageBucket:     "planning-with-ai-6c81a.firebasestorage.app",
-  messagingSenderId: "81967264804",
-  appId:             "1:81967264804:web:fe8e8f02ad36e3841754b1"
-};
-
-import { initializeApp }                            from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword,
-         signInWithEmailAndPassword, signOut,
-         onAuthStateChanged }                       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc,
-         updateDoc, serverTimestamp }               from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { getDatabase, ref, set, onValue,
-         onDisconnect, increment }                from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-// ── detect unconfigured ──
-const IS_CONFIGURED = !FIREBASE_CONFIG.apiKey.includes("PASTE");
-if (!IS_CONFIGURED) document.getElementById('config-warning').classList.add('show');
-
-let app, auth, db, rtdb;
-if (IS_CONFIGURED) {
-  app  = initializeApp(FIREBASE_CONFIG);
-  auth = getAuth(app);
-  db   = getFirestore(app);
-  rtdb = getDatabase(app);
-}
-
-// ══════════════════════════════════════════════
-//  GAME STATE
-// ══════════════════════════════════════════════
-const SEC_PER_DAY = 30, MS_PER_DAY = 30000;
-let balance = 1000, totalWon = 0, totalLost = 0;
-let activeBets = [], history = [];
-let curFilter = 'all', toastTimer = null;
-let betIdCounter = 0, skipTargetBetId = null;
-const resolveTimers = {};
-let currentUser = null, currentUsername = '';
-
-const markets = [
-  {id:0,icon:'🗳️',title:'Трамп подпишет новый торговый указ до конца апреля 2025?',cat:'politics',yes:71,vol:24.3,resolveDate:'30.04.2025',daysLeft:5},
-  {id:1,icon:'₿', title:'Bitcoin достигнет $100K в мае 2025?',cat:'crypto',yes:52,vol:18.7,resolveDate:'31.05.2025',daysLeft:35},
-  {id:2,icon:'⚽',title:'Барселона выиграет Ла Лигу 2024/25?',cat:'sport',yes:62,vol:6.8,resolveDate:'25.05.2025',daysLeft:29},
-  {id:3,icon:'📉',title:'ФРС снизит ставку на заседании в июне 2025?',cat:'economy',yes:67,vol:31.2,resolveDate:'18.06.2025',daysLeft:53},
-  {id:4,icon:'🤖',title:'Apple представит AI-функции на WWDC 2025?',cat:'tech',yes:88,vol:9.1,resolveDate:'09.06.2025',daysLeft:44},
-  {id:5,icon:'🚀',title:'SpaceX запустит Starship в орбиту до июля 2025?',cat:'tech',yes:74,vol:7.4,resolveDate:'01.07.2025',daysLeft:66},
-  {id:6,icon:'🛢️',title:'Нефть Brent будет выше $80 в конце Q2 2025?',cat:'economy',yes:43,vol:14.5,resolveDate:'30.06.2025',daysLeft:65},
-  {id:7,icon:'🏆',title:'Манчестер Сити выйдет в финал ЛЧ 2025?',cat:'sport',yes:38,vol:5.2,resolveDate:'31.05.2025',daysLeft:35},
-  {id:8,icon:'💶',title:'Ethereum превысит $3,500 к июню 2025?',cat:'crypto',yes:46,vol:11.3,resolveDate:'01.06.2025',daysLeft:36},
-  {id:9,icon:'🌍',title:'G7 введёт новые санкции против РФ в мае 2025?',cat:'politics',yes:55,vol:8.6,resolveDate:'31.05.2025',daysLeft:35},
-];
-
-// ══════════════════════════════════════════════
-//  HELPERS
-// ══════════════════════════════════════════════
-const fmt  = n => '$' + Math.abs(n).toFixed(2);
-const fmtM  = n => n >= 1000 ? '$'+(n/1000).toFixed(1)+'B' : '$'+n.toFixed(1)+'M';
-const catLbl= c => ({politics:'Политика',crypto:'Крипто',sport:'Спорт',economy:'Экономика',tech:'Технологии'}[c]||c);
-const msLeft= b => Math.max(0, b.resolveAt - Date.now());
-function fmtCD(ms){
-  if(ms<=0) return '⌛ ...';
-  const s=Math.ceil(ms/1000),d=Math.floor(s/SEC_PER_DAY),sec=s%SEC_PER_DAY;
-  return d>0?`⏱ ${d}д ${sec}с`:`⏱ ${sec}с`;
-}
-
-function setEl(id,val){const e=document.getElementById(id);if(e)e.textContent=val;}
-
-// ══════════════════════════════════════════════
-//  AUTH FLOW
-// ══════════════════════════════════════════════
-window.switchTab = (tab) => {
-  document.getElementById('tab-login').style.display    = tab==='login'    ? '' : 'none';
-  document.getElementById('tab-register').style.display = tab==='register' ? '' : 'none';
-  document.querySelectorAll('.auth-tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&tab==='login')||(i===1&&tab==='register')));
-  document.getElementById('auth-err').textContent = '';
-};
-
-function authErr(msg){ document.getElementById('auth-err').textContent = msg; }
-
-window.doRegister = async () => {
-  if (!IS_CONFIGURED) { authErr('Сначала настройте Firebase конфиг'); return; }
-  const name  = document.getElementById('reg-name').value.trim();
-  const email = document.getElementById('reg-email').value.trim();
-  const pass  = document.getElementById('reg-pass').value;
-  if (!name)  { authErr('Введите имя пользователя'); return; }
-  if (!email) { authErr('Введите email'); return; }
-  if (pass.length < 6) { authErr('Пароль минимум 6 символов'); return; }
-  try {
-    const cred = await createUserWithEmailAndPassword(auth, email, pass);
-    // save user doc
-    await setDoc(doc(db,'users',cred.user.uid), {
-      username: name, email,
-      balance: 1000, totalWon: 0, totalLost: 0,
-      activeBets: [], history: [],
-      createdAt: serverTimestamp()
-    });
-  } catch(e) { authErr(firebaseErrMsg(e)); }
-};
-
-window.doLogin = async () => {
-  if (!IS_CONFIGURED) { authErr('Сначала настройте Firebase конфиг'); return; }
-  const email = document.getElementById('login-email').value.trim();
-  const pass  = document.getElementById('login-pass').value;
-  try { await signInWithEmailAndPassword(auth, email, pass); }
-  catch(e) { authErr(firebaseErrMsg(e)); }
-};
-
-window.doLogout = async () => {
-  if (!IS_CONFIGURED) return;
-  // clear online presence
-  if (currentUser) {
-    const presRef = ref(rtdb, `online/${currentUser.uid}`);
-    await set(presRef, null);
-  }
-  // save state before logout
-  await saveUserData();
-  activeBets.forEach(b => { if(resolveTimers[b.betId]) clearTimeout(resolveTimers[b.betId]); });
-  activeBets = []; history = [];
-  await signOut(auth);
-};
-
-function firebaseErrMsg(e){
-  const m = { 'auth/email-already-in-use':'Email уже используется',
-    'auth/invalid-email':'Неверный email',
-    'auth/wrong-password':'Неверный пароль',
-    'auth/user-not-found':'Пользователь не найден',
-    'auth/weak-password':'Пароль слишком слабый',
-    'auth/invalid-credential':'Неверный email или пароль' };
-  return m[e.code] || e.message;
-}
-
-// ══════════════════════════════════════════════
-//  ONLINE PRESENCE (Realtime DB)
-// ══════════════════════════════════════════════
-function setupPresence(uid) {
-  if (!IS_CONFIGURED) return;
-  const presRef   = ref(rtdb, `online/${uid}`);
-  const countRef  = ref(rtdb, 'onlineCount');
-
-  // mark self online
-  set(presRef, { uid, ts: Date.now() });
-  // auto-remove on disconnect
-  onDisconnect(presRef).remove();
-
-  // listen to total online count
-  const allOnlineRef = ref(rtdb, 'online');
-  onValue(allOnlineRef, snap => {
-    const cnt = snap.exists() ? Object.keys(snap.val()).length : 0;
-    setEl('online-count', cnt);
-    setEl('auth-online-count', cnt);
-  });
-}
-
-function watchOnlineCount() {
-  if (!IS_CONFIGURED) { setEl('auth-online-count','—'); return; }
-  const allOnlineRef = ref(rtdb, 'online');
-  onValue(allOnlineRef, snap => {
-    const cnt = snap.exists() ? Object.keys(snap.val()).length : 0;
-    setEl('auth-online-count', cnt);
-    setEl('online-count', cnt);
-  });
-}
-
-// ══════════════════════════════════════════════
-//  FIRESTORE USER DATA
-// ══════════════════════════════════════════════
-async function loadUserData(uid) {
-  const snap = await getDoc(doc(db,'users',uid));
-  if (!snap.exists()) return;
-  const d = snap.data();
-  balance    = d.balance    ?? 1000;
-  totalWon   = d.totalWon   ?? 0;
-  totalLost  = d.totalLost  ?? 0;
-  history    = d.history    ?? [];
-  // restore active bets with timers
-  const savedBets = d.activeBets ?? [];
-  activeBets = [];
-  savedBets.forEach(b => {
-    const remaining = b.resolveAt - Date.now();
-    if (remaining > 0) {
-      activeBets.push(b);
-      scheduleResolve(b.betId, remaining);
-      if (b.betId >= betIdCounter) betIdCounter = b.betId + 1;
-    } else {
-      // resolve missed bets instantly
-      activeBets.push(b);
-      scheduleResolve(b.betId, 500);
-      if (b.betId >= betIdCounter) betIdCounter = b.betId + 1;
+  // Проверка сохраненной сессии при загрузке
+  window.onload = function() {
+    const savedUser = localStorage.getItem('clicker_current_user');
+    if (savedUser) {
+      loadGameData(savedUser);
+      showGame(savedUser);
     }
-  });
-}
+  };
 
-async function saveUserData() {
-  if (!IS_CONFIGURED || !currentUser) return;
-  try {
-    await updateDoc(doc(db,'users',currentUser.uid), {
-      balance, totalWon, totalLost,
-      activeBets, history: history.slice(0,50),
-      updatedAt: serverTimestamp()
-    });
-  } catch(e) { console.error('Save error', e); }
-}
+  function switchMode() {
+    isRegistering = !isRegistering;
+    document.getElementById('form-title').innerText = isRegistering ? 'Регистрация' : 'Вход';
+    document.getElementById('form-subtitle').innerText = isRegistering ? 'Создайте новый аккаунт' : 'Введите свои данные для игры';
+    document.getElementById('name-group').style.display = isRegistering ? 'block' : 'none';
+    document.getElementById('main-action-btn').innerText = isRegistering ? 'Зарегистрироваться' : 'Войти';
+    document.getElementById('switch-mode-btn').innerText = isRegistering ? 'Уже есть аккаунт? Войти' : 'Нет аккаунта? Зарегистрироваться';
+    document.getElementById('error-msg').innerText = '';
+  }
 
-// auto-save every 15s
-setInterval(() => saveUserData(), 15000);
+  function handleAuth() {
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const username = document.getElementById('username').value.trim();
+    const errorEl = document.getElementById('error-msg');
 
-// ══════════════════════════════════════════════
-//  AUTH STATE LIS
+    if (!email || !password || (isRegistering && !username)) {
+      errorEl.innerText = 'Заполните все поля!';
+      return;
+    }
+
+    // База данных пользователей в localStorage
+    let users = JSON.parse(localStorage.getItem('clicker_users') || '{}');
+
+    if (isRegistering) {
+      if (users[email]) {
+        errorEl.innerText = 'Этот email уже зарегистрирован!';
+        return;
+      }
+      // Создаем нового пользователя
+      users[email] = { username, password, score: 0, clickPower: 1, autoPower: 0, cost1: 15, cost2: 50 };
+      localStorage.setItem('clicker_users', JSON.stringify(users));
+      loginUser(email, username);
+    } else {
+      if (!users[email] || users[email].password !== password) {
+        errorEl.innerText = 'Неверный email или пароль!';
+        return;
+      }
+      loginUser(email, users[email].username);
+    }
+  }
+
+  function loginUser(email, username) {
+    currentUser = email;
+    localStorage.setItem('clicker_current_user', email);
+    loadGameData(email);
+    showGame(username);
+  }
+
+  function loadGameData(email) {
+    let users = JSON.parse(localStorage.getItem('clicker_users') || '{}');
+    if (users[email]) {
+      score = users[email].score || 0;
+      clickPower = users[email].clickPower || 1;
+      autoPower = users[email].autoPower || 0;
+      cost1 = users[email].cost1 || 15;
+      cost2 = users[email].cost2 || 50;
+    }
+    updateUI();
+  }
+
+  function saveGameData() {
+    if (!currentUser) return;
+    let users = JSON.parse(localStorage.getItem('clicker_users') || '{}');
+    if (users[currentUser]) {
+      users[currentUser].score = score;
+      users[currentUser].clickPower = clickPower;
+      users[currentUser].autoPower = autoPower;
+      users[currentUser].cost1 = cost1;
+      users[currentUser].cost2 = cost2;
+      localStorage.setItem('clicker_users', JSON.stringify(users));
+    }
+  }
+
+  function showGame(username) {
+    document.getElementById('auth-container').style.display = 'none';
+    document.getElementById('game-container').style.display = 'block';
+    document.getElementById('display-user').innerText = username;
+  }
+
+  function logout() {
+    saveGameData();
+    currentUser = null;
+    localStorage.removeItem('clicker_current_user');
+    document.getElementById('game-container').style.display = 'none';
+    document.getElementById('auth-container').style.display = 'block';
+  }
+
+  // Игровая логика
+  function clickCoin() {
+    score += clickPower;
+    updateUI();
+    saveGameData();
+  }
+
+  function buyUpgrade(type) {
+    if (type === 1) {
+      if (score >= cost1) {
+        score -= cost1;
+        clickPower += 1;
+        cost1 = Math.floor(cost1 * 1.5);
+      }
+    } else if (type === 2) {
+      if (score >= cost2) {
+        score -= cost2;
+        autoPower += 1;
+        cost2 = Math.floor(cost2 * 1.6);
+      }
+    }
+    updateUI();
+    saveGameData();
+  }
+
+  function updateUI() {
+    document.getElementById('score').innerText = score;
+    document.getElementById('p1-cost').innerText = cost1;
+    document.getElementById('p2-cost').innerText = cost2;
+  }
+
+  // Авто-кликер (каждую секунду)
+  setInterval(() => {
+    if (currentUser && autoPower > 0) {
+      score += autoPower;
+      updateUI();
+      saveGameData();
+    }
+  }, 1000);
+</script>
+
+</body>
+</html>
