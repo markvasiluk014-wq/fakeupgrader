@@ -1,291 +1,599 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CS2 Upgrader & Clicker</title>
-    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PolyMarket</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d0f14;
+  --bg2: #13161d;
+  --bg3: #1a1e28;
+  --bg4: #222736;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --text: #f0f0ee;
+  --muted: #8a8fa0;
+  --dim: #5a5f70;
+  --yes: #22d67a;
+  --no: #ff4d5e;
+  --accent: #4f7fff;
+  --accent2: #7c5cff;
+  --gold: #f5c842;
+  --font: 'Syne', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+  --r: 10px;
+  --r2: 16px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; }
 
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: #0b0e14;
-            color: #fff;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+/* LAYOUT */
+.app { display: grid; grid-template-rows: 56px 1fr; min-height: 100vh; }
+.nav { display: flex; align-items: center; justify-content: space-between; padding: 0 24px; border-bottom: 1px solid var(--border); background: var(--bg); position: sticky; top: 0; z-index: 100; }
+.logo { font-size: 17px; font-weight: 700; letter-spacing: -0.5px; }
+.logo em { color: var(--accent); font-style: normal; }
+.nav-links { display: flex; gap: 4px; }
+.nav-btn { padding: 6px 14px; border-radius: 20px; font-size: 13px; font-family: var(--font); cursor: pointer; border: 1px solid transparent; background: transparent; color: var(--muted); transition: all .15s; }
+.nav-btn:hover { color: var(--text); background: var(--bg3); }
+.nav-btn.active { background: var(--bg3); color: var(--text); border-color: var(--border2); }
+.nav-right { display: flex; align-items: center; gap: 12px; }
+.balance-chip { display: flex; align-items: center; gap: 8px; background: var(--bg3); border: 1px solid var(--border2); border-radius: 20px; padding: 6px 14px; font-size: 13px; font-family: var(--mono); }
+.balance-chip .bal-val { color: var(--yes); font-weight: 500; }
+.avatar { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; cursor: pointer; }
 
-        header {
-            width: 100%;
-            background: #121824;
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #1f293d;
-        }
+.main { padding: 24px; max-width: 1200px; margin: 0 auto; width: 100%; }
 
-        .logo {
-            font-family: 'Teko', sans-serif;
-            font-size: 32px;
-            color: #ffaa00;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
+/* VIEWS */
+.view { display: none; }
+.view.active { display: block; }
 
-        .balance-box {
-            background: #1a2233;
-            padding: 8px 20px;
-            border-radius: 8px;
-            border: 1px solid #2a3650;
-            font-size: 18px;
-            font-weight: 600;
-            color: #00ffcc;
-        }
+/* MARKET PAGE */
+.page-header { margin-bottom: 20px; }
+.section-title { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 4px; }
+.section-sub { font-size: 13px; color: var(--muted); }
 
-        .container {
-            max-width: 900px;
-            width: 90%;
-            margin-top: 30px;
-            display: flex;
-            flex-direction: column;
-            gap: 30px;
-            padding-bottom: 50px;
-        }
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 24px; }
+.stat { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); padding: 14px 16px; }
+.stat-val { font-size: 20px; font-weight: 700; font-family: var(--mono); color: var(--text); }
+.stat-val.green { color: var(--yes); }
+.stat-val.blue { color: var(--accent); }
+.stat-val.gold { color: var(--gold); }
+.stat-lbl { font-size: 11px; color: var(--muted); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
 
-        .card {
-            background: #141b26;
-            border: 1px solid #222d42;
-            border-radius: 12px;
-            padding: 25px;
-            text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        }
+.filters { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
+.chip { padding: 5px 13px; border-radius: 20px; font-size: 12px; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: var(--font); transition: all .15s; }
+.chip:hover { border-color: var(--border2); color: var(--text); }
+.chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 
-        h2 {
-            font-size: 22px;
-            margin-bottom: 15px;
-            color: #e2e8f0;
-        }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
 
-        /* Тапалка */
-        .tap-btn {
-            background: linear-gradient(135deg, #ffaa00, #ff5500);
-            border: none;
-            color: white;
-            font-size: 28px;
-            font-weight: 700;
-            padding: 20px 40px;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 5px 20px rgba(255, 120, 0, 0.4);
-            transition: 0.1s;
-            text-transform: uppercase;
-            font-family: 'Teko', sans-serif;
-            letter-spacing: 1px;
-        }
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r2); padding: 18px; cursor: pointer; transition: border-color .15s, transform .1s; }
+.card:hover { border-color: var(--border2); }
+.card:active { transform: scale(.99); }
+.card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+.card-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--bg3); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.card-title { font-size: 14px; font-weight: 600; line-height: 1.4; color: var(--text); }
+.card-meta { font-size: 11px; color: var(--muted); margin-top: 4px; display: flex; gap: 8px; }
+.meta-tag { background: var(--bg3); border-radius: 4px; padding: 2px 6px; }
+.card-date { color: var(--gold); }
 
-        .tap-btn:active {
-            transform: scale(0.95);
-        }
+.bar-wrap { height: 5px; background: var(--bg4); border-radius: 3px; margin-bottom: 12px; overflow: hidden; display: flex; }
+.bar-y { background: var(--yes); height: 100%; border-radius: 3px 0 0 3px; transition: width .6s cubic-bezier(.4,0,.2,1); }
+.bar-n { background: var(--no); height: 100%; border-radius: 0 3px 3px 0; transition: width .6s cubic-bezier(.4,0,.2,1); }
 
-        /* Апгрейдер */
-        .upgrader-area {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            margin: 20px 0;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
+.card-foot { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.probs { display: flex; gap: 10px; }
+.p-yes { font-size: 13px; font-weight: 600; color: var(--yes); font-family: var(--mono); }
+.p-no { font-size: 13px; font-weight: 600; color: var(--no); font-family: var(--mono); }
+.card-vol { font-size: 11px; color: var(--dim); }
 
-        .skin-box {
-            background: #1a2233;
-            border: 2px solid #2a3650;
-            width: 160px;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-        }
+.bet-row { display: flex; gap: 6px; align-items: center; }
+.bet-input { flex: 1; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px; color: var(--text); font-size: 13px; font-family: var(--mono); outline: none; transition: border-color .15s; min-width: 0; }
+.bet-input:focus { border-color: var(--accent); }
+.bet-input::placeholder { color: var(--dim); }
+.btn-y { padding: 7px 14px; border-radius: 8px; border: none; background: rgba(34,214,122,.15); color: var(--yes); font-size: 13px; font-weight: 600; font-family: var(--font); cursor: pointer; transition: all .15s; white-space: nowrap; }
+.btn-y:hover { background: rgba(34,214,122,.25); }
+.btn-n { padding: 7px 14px; border-radius: 8px; border: none; background: rgba(255,77,94,.15); color: var(--no); font-size: 13px; font-weight: 600; font-family: var(--font); cursor: pointer; transition: all .15s; white-space: nowrap; }
+.btn-n:hover { background: rgba(255,77,94,.25); }
 
-        .skin-box img {
-            width: 100px;
-            height: 70px;
-            object-fit: contain;
-            margin-bottom: 10px;
-        }
+.my-pos-tag { font-size: 11px; color: var(--muted); margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); display: none; }
+.my-pos-tag.show { display: flex; align-items: center; justify-content: space-between; }
+.pos-badge { padding: 2px 7px; border-radius: 4px; font-size: 11px; font-family: var(--mono); }
+.pos-y { background: rgba(34,214,122,.12); color: var(--yes); }
+.pos-n { background: rgba(255,77,94,.12); color: var(--no); }
 
-        .upgrade-btn {
-            background: #00ffcc;
-            border: none;
-            color: #0b0e14;
-            font-weight: 700;
-            padding: 12px 30px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: 0.2s;
-        }
+/* TOAST */
+#toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--bg3); border: 1px solid var(--border2); border-radius: 24px; padding: 10px 20px; font-size: 13px; display: flex; align-items: center; gap: 10px; z-index: 9999; transition: transform .3s cubic-bezier(.4,0,.2,1), opacity .3s; opacity: 0; white-space: nowrap; max-width: 90vw; }
+#toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+#toast .t-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+#toast .t-main { color: var(--text); }
+#toast .t-sub { color: var(--muted); font-size: 12px; }
 
-        .upgrade-btn:hover {
-            background: #00cca3;
-            box-shadow: 0 0 15px rgba(0,255,204,0.4);
-        }
+/* CABINET */
+.cab-grid { display: grid; grid-template-columns: 320px 1fr; gap: 16px; }
+.cab-sidebar { display: flex; flex-direction: column; gap: 12px; }
 
-        #result-msg {
-            margin-top: 10px;
-            font-weight: 600;
-            font-size: 16px;
-        }
+.profile-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r2); padding: 20px; }
+.profile-top { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+.profile-avatar { width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; }
+.profile-name { font-size: 16px; font-weight: 700; }
+.profile-tag { font-size: 12px; color: var(--muted); margin-top: 2px; font-family: var(--mono); }
 
-        /* Магазин */
-        .shop-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
-        }
+.balance-block { background: var(--bg3); border-radius: var(--r); padding: 14px; margin-bottom: 12px; }
+.balance-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.balance-big { font-size: 28px; font-weight: 700; font-family: var(--mono); color: var(--yes); }
+.balance-change { font-size: 12px; margin-top: 4px; font-family: var(--mono); }
+.balance-change.pos { color: var(--yes); }
+.balance-change.neg { color: var(--no); }
 
-        .shop-item {
-            background: #1a2233;
-            border: 1px solid #2a3650;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-        }
+.mini-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.mini-stat { background: var(--bg3); border-radius: 8px; padding: 10px 12px; }
+.mini-stat-val { font-size: 16px; font-weight: 700; font-family: var(--mono); }
+.mini-stat-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
 
-        .shop-item img {
-            width: 120px;
-            height: 80px;
-            object-fit: contain;
-            margin-bottom: 10px;
-        }
+.active-bets-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r2); padding: 20px; flex: 1; }
 
-        .buy-btn {
-            background: #2563eb;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            margin-top: 10px;
-            width: 100%;
-        }
+.cab-main { display: flex; flex-direction: column; gap: 12px; }
+.cab-section { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r2); padding: 20px; }
+.cab-section-title { font-size: 14px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
+.cab-section-title .count { font-size: 12px; color: var(--muted); font-weight: 400; font-family: var(--mono); background: var(--bg3); border-radius: 20px; padding: 2px 8px; }
 
-        .buy-btn:hover {
-            background: #1d4ed8;
-        }
-    </style>
+.bet-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.bet-item:last-child { border-bottom: none; padding-bottom: 0; }
+.bet-item:first-child { padding-top: 0; }
+.bet-icon { width: 34px; height: 34px; background: var(--bg3); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+.bet-info { flex: 1; min-width: 0; }
+.bet-title { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bet-detail { font-size: 11px; color: var(--muted); margin-top: 3px; display: flex; gap: 8px; flex-wrap: wrap; }
+.bet-side { padding: 1px 6px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.side-yes { background: rgba(34,214,122,.15); color: var(--yes); }
+.side-no { background: rgba(255,77,94,.15); color: var(--no); }
+.bet-nums { text-align: right; flex-shrink: 0; }
+.bet-amount { font-size: 13px; font-weight: 600; font-family: var(--mono); }
+.bet-pnl { font-size: 11px; font-family: var(--mono); margin-top: 3px; }
+.pnl-pos { color: var(--yes); }
+.pnl-neg { color: var(--no); }
+.pnl-neu { color: var(--muted); }
+
+.bet-date { font-size: 10px; color: var(--dim); }
+.bet-deadline { font-size: 10px; color: var(--gold); }
+
+.hist-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.hist-item:last-child { border-bottom: none; padding-bottom: 0; }
+.hist-item:first-child { padding-top: 0; }
+.hist-result { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
+.res-win { background: rgba(34,214,122,.15); color: var(--yes); }
+.res-lose { background: rgba(255,77,94,.15); color: var(--no); }
+.res-pending { background: var(--bg3); color: var(--muted); }
+.hist-pnl { font-size: 13px; font-weight: 700; font-family: var(--mono); text-align: right; }
+
+.empty-state { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px; }
+.empty-icon { font-size: 32px; margin-bottom: 10px; }
+
+/* RESOLVED BADGE */
+.resolved-banner { background: rgba(34,214,122,.08); border: 1px solid rgba(34,214,122,.2); border-radius: 8px; padding: 8px 12px; font-size: 12px; color: var(--yes); margin-bottom: 6px; display: none; }
+.resolved-banner.show { display: flex; align-items: center; gap: 6px; }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+</style>
 </head>
 <body>
+<div class="app">
 
-    <header>
-        <div class="logo">CS2 UPGRADER & CLICKER</div>
-        <div class="balance-box">Монеты: <span id="coins">100</span> 🪙</div>
-    </header>
+<!-- NAV -->
+<nav class="nav">
+  <div class="logo"><em>Poly</em>Market</div>
+  <div class="nav-links">
+    <button class="nav-btn active" onclick="showView('markets',this)">Рынки</button>
+    <button class="nav-btn" onclick="showView('cabinet',this)">Личный кабинет</button>
+  </div>
+  <div class="nav-right">
+    <div class="balance-chip">💰 <span class="bal-val" id="nav-balance">$1,000.00</span></div>
+    <div class="avatar">АИ</div>
+  </div>
+</nav>
 
-    <div class="container">
-        <!-- Блок кликера -->
-        <div class="card">
-            <h2>Фарм монет (Тапалка)</h2>
-            <p style="color: #8b9bb4; margin-bottom: 15px;">Тапай по кнопке, чтобы зарабатывать монеты для апгрейдов!</p>
-            <button class="tap-btn" onclick="tapCoins()">ТАПАТЬ (+1 🪙)</button>
+<div class="main">
+
+<!-- TOAST -->
+<div id="toast">
+  <div class="t-dot" id="t-dot"></div>
+  <div><div class="t-main" id="t-main"></div><div class="t-sub" id="t-sub"></div></div>
+</div>
+
+<!-- MARKETS VIEW -->
+<div class="view active" id="view-markets">
+  <div class="page-header">
+    <div class="section-title">Рынок предсказаний</div>
+    <div class="section-sub">Ставьте на исходы мировых событий и зарабатывайте</div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat"><div class="stat-val green" id="s-balance">$1,000.00</div><div class="stat-lbl">Ваш баланс</div></div>
+    <div class="stat"><div class="stat-val blue" id="s-bets">0</div><div class="stat-lbl">Активных ставок</div></div>
+    <div class="stat"><div class="stat-val gold" id="s-won">$0.00</div><div class="stat-lbl">Выиграно всего</div></div>
+    <div class="stat"><div class="stat-val" id="s-vol">$2.4B</div><div class="stat-lbl">Объём рынка</div></div>
+  </div>
+
+  <div class="filters" id="filters">
+    <div class="chip active" onclick="setFilter(this,'all')">Все</div>
+    <div class="chip" onclick="setFilter(this,'politics')">Политика</div>
+    <div class="chip" onclick="setFilter(this,'crypto')">Крипто</div>
+    <div class="chip" onclick="setFilter(this,'sport')">Спорт</div>
+    <div class="chip" onclick="setFilter(this,'economy')">Экономика</div>
+    <div class="chip" onclick="setFilter(this,'tech')">Технологии</div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+</div>
+
+<!-- CABINET VIEW -->
+<div class="view" id="view-cabinet">
+  <div class="cab-grid">
+    <div class="cab-sidebar">
+      <div class="profile-card">
+        <div class="profile-top">
+          <div class="profile-avatar">АИ</div>
+          <div>
+            <div class="profile-name">Анонимный игрок</div>
+            <div class="profile-tag">@player_001</div>
+          </div>
         </div>
-
-        <!-- Блок апгрейдера -->
-        <div class="card">
-            <h2>Апгрейд скинов (Шанс 50%)</h2>
-            <div class="upgrader-area">
-                <div class="skin-box">
-                    <p style="font-size: 12px; color: #8b9bb4;">Ваш скин</p>
-                    <p style="font-weight: bold; color: #bce3c5;">AK-47 | Safari Mesh</p>
-                    <p style="font-size: 12px; color: #ffaa00;">Цена: 50 🪙</p>
-                </div>
-                <div style="font-size: 24px; font-weight: bold; color: #ffaa00;">VS</div>
-                <div class="skin-box" style="border-color: #ffaa00;">
-                    <p style="font-size: 12px; color: #8b9bb4;">Желаемый скин</p>
-                    <p style="font-weight: bold; color: #ffd700;">AWP | Asiimov</p>
-                    <p style="font-size: 12px; color: #ffaa00;">Цена: 200 🪙</p>
-                </div>
-            </div>
-            <button class="upgrade-btn" onclick="tryUpgrade()">КРУТИТЬ АПГРЕЙД (Стоит 50 🪙)</button>
-            <p id="result-msg"></p>
+        <div class="balance-block">
+          <div class="balance-label">Текущий баланс</div>
+          <div class="balance-big" id="cab-balance">$1,000.00</div>
+          <div class="balance-change" id="cab-change">Начальный капитал</div>
         </div>
-
-        <!-- Блок магазина -->
-        <div class="card">
-            <h2>Магазин скинов</h2>
-            <div class="shop-grid">
-                <div class="shop-item">
-                    <p style="font-weight: bold;">USP-S | Flashback</p>
-                    <p style="color: #ffaa00; font-size: 14px; margin: 5px 0;">150 🪙</p>
-                    <button class="buy-btn" onclick="buySkin(150, 'USP-S | Flashback')">Купить</button>
-                </div>
-                <div class="shop-item">
-                    <p style="font-weight: bold;">M4A4 | Neo-Noir</p>
-                    <p style="color: #ffaa00; font-size: 14px; margin: 5px 0;">400 🪙</p>
-                    <button class="buy-btn" onclick="buySkin(400, 'M4A4 | Neo-Noir')">Купить</button>
-                </div>
-            </div>
+        <div class="mini-stats">
+          <div class="mini-stat">
+            <div class="mini-stat-val green" id="cab-won">$0</div>
+            <div class="mini-stat-lbl">Выиграно</div>
+          </div>
+          <div class="mini-stat">
+            <div class="mini-stat-val" style="color:var(--no)" id="cab-lost">$0</div>
+            <div class="mini-stat-lbl">Проиграно</div>
+          </div>
+          <div class="mini-stat">
+            <div class="mini-stat-val blue" id="cab-cnt">0</div>
+            <div class="mini-stat-lbl">Ставок</div>
+          </div>
+          <div class="mini-stat">
+            <div class="mini-stat-val gold" id="cab-wr">—</div>
+            <div class="mini-stat-lbl">Побед %</div>
+          </div>
         </div>
+      </div>
     </div>
 
-    <script>
-        let coins = 100;
+    <div class="cab-main">
+      <div class="cab-section">
+        <div class="cab-section-title">Активные ставки <span class="count" id="active-count">0</span></div>
+        <div id="active-bets-list"><div class="empty-state"><div class="empty-icon">📊</div>Нет активных ставок.<br>Сделайте первую ставку на рынках!</div></div>
+      </div>
+      <div class="cab-section">
+        <div class="cab-section-title">История ставок <span class="count" id="hist-count">0</span></div>
+        <div id="history-list"><div class="empty-state"><div class="empty-icon">📜</div>История пуста</div></div>
+      </div>
+    </div>
+  </div>
+</div>
 
-        function updateCoins() {
-            document.getElementById('coins').textContent = coins;
-        }
+</div><!-- /main -->
+</div><!-- /app -->
 
-        function tapCoins() {
-            coins += 1;
-            updateCoins();
-        }
+<script>
+// =========== STATE ===========
+let balance = 1000;
+const INITIAL = 1000;
+let totalWon = 0;
+let totalLost = 0;
+let activeBets = []; // {id, marketId, side, amount, price, resolveDate, marketTitle, icon}
+let history = [];    // {id, marketId, side, amount, price, result, pnl, marketTitle, icon, date}
 
-        function tryUpgrade() {
-            const cost = 50;
-            const msg = document.getElementById('result-msg');
+const markets = [
+  {id:0, icon:'🗳️', title:'Республиканцы выиграют Сенат США в 2026?', cat:'politics', yes:67, vol:18.2, resolveDate:'03.11.2026', daysLeft:193},
+  {id:1, icon:'₿', title:'Bitcoin достигнет $120K до конца 2026?', cat:'crypto', yes:44, vol:9.7, resolveDate:'31.12.2026', daysLeft:251},
+  {id:2, icon:'⚽', title:'Реал Мадрид выиграет Лигу чемпионов 2026?', cat:'sport', yes:31, vol:4.1, resolveDate:'01.06.2026', daysLeft:38},
+  {id:3, icon:'📉', title:'ФРС снизит ставку на заседании в мае?', cat:'economy', yes:72, vol:22.5, resolveDate:'07.05.2026', daysLeft:13},
+  {id:4, icon:'🤖', title:'OpenAI выпустит GPT-5 до июля 2026?', cat:'tech', yes:58, vol:6.3, resolveDate:'01.07.2026', daysLeft:68},
+  {id:5, icon:'🚀', title:'SpaceX проведёт IPO в 2026?', cat:'tech', yes:29, vol:3.8, resolveDate:'31.12.2026', daysLeft:251},
+  {id:6, icon:'🛢️', title:'Нефть Brent опустится ниже $60 в Q2 2026?', cat:'economy', yes:39, vol:11.1, resolveDate:'30.06.2026', daysLeft:67},
+  {id:7, icon:'🏆', title:'Аргентина выиграет Копа Америка 2026?', cat:'sport', yes:24, vol:2.9, resolveDate:'15.07.2026', daysLeft:82},
+  {id:8, icon:'💶', title:'Ethereum достигнет $5K до конца 2026?', cat:'crypto', yes:41, vol:7.2, resolveDate:'31.12.2026', daysLeft:251},
+];
 
-            if (coins < cost) {
-                msg.style.color = '#ff4d4d';
-                msg.textContent = 'Недостаточно монет для апгрейда!';
-                return;
-            }
+let curFilter = 'all';
+let toastTimer = null;
+let betIdCounter = 0;
 
-            coins -= cost;
-            updateCoins();
+// =========== UTILS ===========
+const fmt = n => '$' + Math.abs(n).toFixed(2);
+const fmtM = n => n >= 1000 ? '$'+(n/1000).toFixed(1)+'B' : '$'+n.toFixed(1)+'M';
 
-            // Шанс 50%
-            const success = Math.random() >= 0.5;
+function updateAllStats() {
+  const b = fmt(balance);
+  document.getElementById('nav-balance').textContent = b;
+  document.getElementById('s-balance').textContent = b;
+  document.getElementById('cab-balance').textContent = b;
+  document.getElementById('s-bets').textContent = activeBets.length;
+  document.getElementById('s-won').textContent = fmt(totalWon);
+  document.getElementById('active-count').textContent = activeBets.length;
+  document.getElementById('hist-count').textContent = history.length;
 
-            if (success) {
-                msg.style.color = '#00ffcc';
-                msg.textContent = 'УСПЕХ! Вы выиграли AWP | Asiimov! 🎉';
-                coins += 200; // Награда
-                updateCoins();
-            } else {
-                msg.style.color = '#ff4d4d';
-                msg.textContent = 'Неудача! Скин сгорел 😢';
-            }
-        }
+  const diff = balance - INITIAL + totalWon - totalLost;
+  const changeEl = document.getElementById('cab-change');
+  if(diff > 0) { changeEl.textContent = '+' + fmt(diff) + ' от начала'; changeEl.className = 'balance-change pos'; }
+  else if(diff < 0) { changeEl.textContent = fmt(diff) + ' от начала'; changeEl.className = 'balance-change neg'; }
+  else { changeEl.textContent = 'Начальный капитал'; changeEl.className = 'balance-change'; }
 
-        function buySkin(price, name) {
-            if (coins >= price) {
-                coins -= price;
-                updateCoins();
-                alert('Поздравляем с покупкой: ' + name + '!');
-            } else {
-                alert('Не хватает монеток!');
-            }
-        }
-    </script>
+  document.getElementById('cab-won').textContent = fmt(totalWon);
+  document.getElementById('cab-lost').textContent = fmt(totalLost);
+  document.getElementById('cab-cnt').textContent = history.length + activeBets.length;
+  const wins = history.filter(h => h.result === 'win').length;
+  const total = history.length;
+  document.getElementById('cab-wr').textContent = total > 0 ? Math.round(wins/total*100)+'%' : '—';
+}
+
+// =========== TOAST ===========
+function showToast(side, msg, sub) {
+  const t = document.getElementById('toast');
+  document.getElementById('t-dot').style.background = side === 'yes' ? 'var(--yes)' : side === 'no' ? 'var(--no)' : 'var(--gold)';
+  document.getElementById('t-main').textContent = msg;
+  document.getElementById('t-sub').textContent = sub;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// =========== BET ===========
+function placeBet(marketId, side) {
+  const input = document.getElementById('input-'+marketId);
+  const amount = parseFloat(input.value);
+  if(isNaN(amount) || amount <= 0) { showToast('no','Введите сумму ставки','Минимум $1'); return; }
+  if(amount > balance) { showToast('no','Недостаточно средств', 'Баланс: ' + fmt(balance)); return; }
+  if(amount < 1) { showToast('no','Минимальная ставка $1',''); return; }
+
+  const m = markets[marketId];
+  const price = side === 'yes' ? m.yes / 100 : (100 - m.yes) / 100;
+  const potentialWin = amount / price;
+
+  balance -= amount;
+  totalLost += amount; // track spent, adjusted on resolve
+
+  const betId = ++betIdCounter;
+  activeBets.push({
+    betId, marketId, side, amount, price,
+    resolveDate: m.resolveDate, daysLeft: m.daysLeft,
+    marketTitle: m.title, icon: m.icon, potentialWin
+  });
+
+  // shift probability slightly
+  const delta = (amount / 500) * (Math.random() * 2 + 0.5);
+  if(side === 'yes') m.yes = Math.min(96, m.yes + delta);
+  else m.yes = Math.max(4, m.yes - delta);
+  m.vol += amount / 1000000;
+
+  input.value = '';
+  updateCard(marketId);
+  updateAllStats();
+  renderCabinet();
+  showToast('yes', `Ставка «${side === 'yes' ? 'Да' : 'Нет'}» принята!`, `${fmt(amount)} → потенциально ${fmt(potentialWin)}`);
+
+  // auto-resolve markets that expire soon (daysLeft ≤ 13) after 4s for demo
+  if(m.daysLeft <= 13) {
+    setTimeout(() => resolveMarket(marketId), 4000 + Math.random() * 2000);
+  }
+}
+
+function resolveMarket(marketId) {
+  const m = markets[marketId];
+  const myBets = activeBets.filter(b => b.marketId === marketId);
+  if(myBets.length === 0) return;
+
+  // result based on current probability
+  const outcome = Math.random() < (m.yes / 100) ? 'yes' : 'no';
+  const outcomeLabel = outcome === 'yes' ? 'Да' : 'Нет';
+
+  myBets.forEach(bet => {
+    const won = bet.side === outcome;
+    const pnl = won ? +(bet.potentialWin - bet.amount).toFixed(2) : -bet.amount;
+
+    if(won) {
+      balance += bet.potentialWin;
+      totalWon += bet.potentialWin;
+      totalLost -= bet.amount; // correct the pre-deducted
+    } else {
+      // amount already deducted, just fix totalLost
+    }
+
+    history.unshift({
+      betId: bet.betId, marketId, side: bet.side, amount: bet.amount,
+      price: bet.price, result: won ? 'win' : 'lose',
+      pnl, marketTitle: bet.marketTitle, icon: bet.icon,
+      date: new Date().toLocaleDateString('ru'), potentialWin: bet.potentialWin
+    });
+
+    showToast(won ? 'yes' : 'no',
+      won ? `Победа! +${fmt(bet.potentialWin)}` : `Ставка проиграна`,
+      `Итог: «${outcomeLabel}» · ${m.title.substring(0,40)}...`);
+  });
+
+  activeBets = activeBets.filter(b => b.marketId !== marketId);
+  updateAllStats();
+  renderCabinet();
+  updateCard(marketId);
+}
+
+// =========== RENDER MARKETS ===========
+function updateCard(id) {
+  const m = markets[id];
+  const el = document.getElementById('card-'+id);
+  if(!el) return;
+  el.querySelector('.bar-y').style.width = Math.round(m.yes) + '%';
+  el.querySelector('.bar-n').style.width = (100 - Math.round(m.yes)) + '%';
+  el.querySelector('.p-yes').textContent = 'Да ' + Math.round(m.yes) + '%';
+  el.querySelector('.p-no').textContent = 'Нет ' + (100 - Math.round(m.yes)) + '%';
+  el.querySelector('.card-vol').textContent = fmtM(m.vol);
+
+  const myBets = activeBets.filter(b => b.marketId === id);
+  const posTag = el.querySelector('.my-pos-tag');
+  if(myBets.length > 0) {
+    posTag.className = 'my-pos-tag show';
+    const yesBets = myBets.filter(b => b.side === 'yes');
+    const noBets = myBets.filter(b => b.side === 'no');
+    let html = '<span style="color:var(--muted);font-size:11px">Ваши ставки:</span><span style="display:flex;gap:4px">';
+    if(yesBets.length) html += `<span class="pos-badge pos-y">Да ×${yesBets.length}</span>`;
+    if(noBets.length) html += `<span class="pos-badge pos-n">Нет ×${noBets.length}</span>`;
+    html += '</span>';
+    posTag.innerHTML = html;
+  } else {
+    posTag.className = 'my-pos-tag';
+  }
+
+  // resolved indicator
+  const banner = el.querySelector('.resolved-banner');
+  if(m.daysLeft <= 13 && banner) {
+    banner.className = 'resolved-banner show';
+  }
+}
+
+function cardHTML(m) {
+  const yp = Math.round(m.yes);
+  const np = 100 - yp;
+  const priceY = (m.yes / 100).toFixed(2);
+  const priceN = ((100 - m.yes) / 100).toFixed(2);
+  const urgent = m.daysLeft <= 13;
+  return `<div class="card" id="card-${m.id}">
+    ${urgent ? `<div class="resolved-banner show">⚡ Завершается ${m.resolveDate} — результат скоро!</div>` : ''}
+    <div class="card-top">
+      <div class="card-icon">${m.icon}</div>
+      <div style="flex:1;min-width:0">
+        <div class="card-title">${m.title}</div>
+        <div class="card-meta">
+          <span class="meta-tag">${catLabel(m.cat)}</span>
+          <span class="card-date meta-tag">📅 ${m.resolveDate}</span>
+          <span class="meta-tag" style="color:var(--muted)">${m.daysLeft}д.</span>
+        </div>
+      </div>
+    </div>
+    <div class="bar-wrap">
+      <div class="bar-y" style="width:${yp}%"></div>
+      <div class="bar-n" style="width:${np}%"></div>
+    </div>
+    <div class="card-foot">
+      <div class="probs">
+        <span class="p-yes">Да ${yp}%</span>
+        <span class="p-no">Нет ${np}%</span>
+      </div>
+      <span class="card-vol">${fmtM(m.vol)}</span>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:8px;font-size:11px;color:var(--muted)">
+      <span>Цена Да: <b style="color:var(--yes);font-family:var(--mono)">$${priceY}</b></span>
+      <span>·</span>
+      <span>Цена Нет: <b style="color:var(--no);font-family:var(--mono)">$${priceN}</b></span>
+    </div>
+    <div class="bet-row">
+      <input class="bet-input" id="input-${m.id}" type="number" min="1" max="${balance.toFixed(0)}" placeholder="Сумма ($)" />
+      <button class="btn-y" onclick="placeBet(${m.id},'yes')">Да</button>
+      <button class="btn-n" onclick="placeBet(${m.id},'no')">Нет</button>
+    </div>
+    <div class="my-pos-tag"></div>
+  </div>`;
+}
+
+function catLabel(c) {
+  return {politics:'Политика',crypto:'Крипто',sport:'Спорт',economy:'Экономика',tech:'Технологии'}[c] || c;
+}
+
+function render() {
+  const list = curFilter === 'all' ? markets : markets.filter(m => m.cat === curFilter);
+  document.getElementById('grid').innerHTML = list.map(cardHTML).join('');
+}
+
+function setFilter(el, cat) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  curFilter = cat;
+  render();
+}
+
+// =========== RENDER CABINET ===========
+function renderCabinet() {
+  // Active bets
+  const ab = document.getElementById('active-bets-list');
+  if(activeBets.length === 0) {
+    ab.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div>Нет активных ставок.<br>Сделайте первую ставку!</div>';
+  } else {
+    ab.innerHTML = activeBets.map(b => {
+      const m = markets[b.marketId];
+      const curPrice = b.side === 'yes' ? m.yes / 100 : (100 - m.yes) / 100;
+      const curVal = b.amount * (curPrice / b.price);
+      const pnl = curVal - b.amount;
+      const pnlClass = pnl > 0.5 ? 'pnl-pos' : pnl < -0.5 ? 'pnl-neg' : 'pnl-neu';
+      const pnlStr = (pnl >= 0 ? '+' : '') + fmt(pnl);
+      return `<div class="bet-item">
+        <div class="bet-icon">${b.icon}</div>
+        <div class="bet-info">
+          <div class="bet-title">${b.marketTitle}</div>
+          <div class="bet-detail">
+            <span class="bet-side ${b.side === 'yes' ? 'side-yes' : 'side-no'}">${b.side === 'yes' ? 'Да' : 'Нет'}</span>
+            <span class="bet-deadline">📅 ${b.resolveDate}</span>
+            <span style="color:var(--muted)">Потенциал: ${fmt(b.potentialWin)}</span>
+          </div>
+        </div>
+        <div class="bet-nums">
+          <div class="bet-amount">${fmt(b.amount)}</div>
+          <div class="bet-pnl ${pnlClass}">${pnlStr}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // History
+  const hl = document.getElementById('history-list');
+  if(history.length === 0) {
+    hl.innerHTML = '<div class="empty-state"><div class="empty-icon">📜</div>История пуста</div>';
+  } else {
+    hl.innerHTML = history.map(h => {
+      const isWin = h.result === 'win';
+      const pnlStr = (h.pnl >= 0 ? '+' : '') + fmt(h.pnl);
+      return `<div class="hist-item">
+        <div class="hist-result ${isWin ? 'res-win' : 'res-lose'}">${isWin ? '✓' : '✗'}</div>
+        <div class="bet-icon" style="width:28px;height:28px;font-size:13px">${h.icon}</div>
+        <div class="bet-info">
+          <div class="bet-title">${h.marketTitle}</div>
+          <div class="bet-detail">
+            <span class="bet-side ${h.side === 'yes' ? 'side-yes' : 'side-no'}">${h.side === 'yes' ? 'Да' : 'Нет'}</span>
+            <span class="bet-date">${h.date}</span>
+            <span style="color:var(--muted)">Поставлено: ${fmt(h.amount)}</span>
+          </div>
+        </div>
+        <div class="bet-nums">
+          <div class="hist-pnl" style="color:${isWin ? 'var(--yes)' : 'var(--no)'}">${pnlStr}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+}
+
+// =========== NAVIGATION ===========
+function showView(name, btn) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  if(name === 'cabinet') { updateAllStats(); renderCabinet(); }
+}
+
+// =========== INIT ===========
+render();
+updateAllStats();
+renderCabinet();
+</script>
 </body>
 </html>
